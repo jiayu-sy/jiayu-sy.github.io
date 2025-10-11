@@ -9,6 +9,7 @@ categories:
 tags:
     - Example Tag
 weight: 1       # You can add weight to some posts to override the default sorting (date descending)
+math: true
 ---
 
 ***
@@ -40,7 +41,6 @@ weight: 1       # You can add weight to some posts to override the default sorti
 
 有什么用？不妨一开始就不乘这个天杀的 $\frac{2}{3}$ 看看会对控制过程产生什么影响。首先，若设三相为平衡的正弦电流，$i_{a}=I_{m}\sin{\theta}, i_{b}=I_{m}\sin{(\theta+\frac{2}{3}\pi)}, i_{c}=I_{m}\sin{(\theta-\frac{2}{3}\pi)}$，不乘等幅值系数的克拉克变换为：（出于某种原因根号不渲染，略往右移的3就是根号三）
 
-{{< katex >}}
 $$
 \begin{bmatrix} i_{\alpha} \\ 
 i_{\beta} \end{bmatrix} = 
@@ -48,7 +48,6 @@ i_{\beta} \end{bmatrix} =
 0 & \frac{\sqrt{3}}{2} & -\frac{\sqrt{3}}{2} \end{bmatrix}
 \begin{bmatrix} i_{a} \\ i_{b} \\ i_{c} \end{bmatrix}
 $$
-{{< /katex >}}
 
 经过克拉克变换后，空间矢量在 $\alpha\beta$ 轴的分量为 $i_{\alpha}=(\sin{\theta}+\frac{1}{4}\sin{\theta}-\frac{\sqrt{3}}{4}\cos{\theta}+\frac{1}{4}\sin{\theta}+\frac{\sqrt{3}}{4}\cos{\theta})=\frac{3}{2}I_m\sin{\theta}$, $i_{\beta}=\frac{3}{2}I_m\cos{\theta}$。于是，该坐标下合成的空间矢量为 $i_s=i_{\alpha}+ji_{\beta}=\frac{3}{2}I_me^{j\theta}$，**长度为 $\frac{3}{2}I_m$**，当 $\theta=\omega t$,矢量的轨迹就是以角速度 $\omega$ 旋转的圆。这意味着，矢量的幅值变成单相电流实际大小的1.5倍。
 
