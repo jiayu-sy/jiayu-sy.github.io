@@ -1,26 +1,14 @@
 ---
-title: Hello World
-description: Welcome to Hugo Theme Stack
-slug: hello-world
-date: 2022-03-06 00:00:00+0000
+title: FOC 
+description: notes
+slug: foc1
+date: 2025-08-20T18:09:48+08:00
 image: cover.jpg
 categories:
     - Example Category
 tags:
     - Example Tag
 weight: 1       # You can add weight to some posts to override the default sorting (date descending)
----
-
----
-weight: 997
-title: "FOC Notes"
-description: ""
-icon: "article"
-date: "2025-08-20T18:09:48+08:00"
-lastmod: "2025-08-20T18:09:48+08:00"
-draft: false
-toc: true
-katex: true
 ---
 
 ***
@@ -86,6 +74,12 @@ $$
 
 好了。到现在我的信心是很足了，不再到处怀疑。数学乃一切的基石！
 
+{{< spacer 12 >}}
+<p style="text-align: center;">
+  <img src="/image/image1.png" alt="cat" width="200">
+</p>
+{{< spacer 12 >}}
+
 ###### 3. PID控制器相关
 
 **1）$\bold{i_d}$, $\bold{i_q}$ 限幅**
@@ -113,6 +107,12 @@ $$
 
 - for some mental image, 我们做的是，设一个调制周期，在每个周期中，执行一次算法（SVPWM 本质上是对 V_DC 逆变的过程），更新三个时间比例，从而更新一次PWM信号。该周期与三角波的计数周期相等。如下图所示
 （至于采样周期还不明确）。Trigger? 
+
+{{< spacer 12 >}}
+<p style="text-align: center;">
+  <img src="/image/svpwm.jpg" alt="cat" width="600">
+</p>
+{{< spacer 12 >}}
 
 - 上方的蓝线为CCR值。在这种scale下变化是很缓慢的。
 
