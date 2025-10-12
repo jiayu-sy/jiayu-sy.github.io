@@ -3,7 +3,7 @@ title: FOC
 description: notes
 slug: foc1
 date: 2025-08-20T18:09:48+08:00
-image: cover.jpg
+# image: cover.jpg
 categories:
     - Example Category
 tags:

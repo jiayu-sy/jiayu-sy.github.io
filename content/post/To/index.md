@@ -1,11 +1,11 @@
 ---
-title: Shortcodes
-description: Useful shortcodes that can be used in Markdown
+title: To
+description: The Album: Ólafur Arnalds & Nils Frahm
 date: 2023-08-25 00:00:00+0000
 image: cover.jpg
 ---
 
-For more details, check out the [documentation](https://stack.jimmycai.com/writing/shortcodes).
+<!-- For more details, check out the [documentation](https://stack.jimmycai.com/writing/shortcodes).
 
 ## Bilibili video
 
@@ -39,4 +39,4 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 
 -----
 
-> Photo by [Codioful](https://unsplash.com/@codioful) on [Unsplash](https://unsplash.com/photos/WDSN62Qdxuk)
+> Photo by [Codioful](https://unsplash.com/@codioful) on [Unsplash](https://unsplash.com/photos/WDSN62Qdxuk) -->
