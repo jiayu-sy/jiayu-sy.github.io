@@ -14,8 +14,3 @@ url = "https://github.com/jiayu-sy"
 
 [social.params]
 icon = "brand-github"
-
-[[social]]
-
-[social.params]
-icon = "brand-twitter"
