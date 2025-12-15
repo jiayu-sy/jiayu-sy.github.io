@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Example Tag on My stack</title><link>https://jiayu-sy.github.io/tags/example-tag/</link><description>Recent content in Example Tag on My stack</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Wed, 20 Aug 2025 18:09:48 +0800</lastBuildDate><atom:link href="https://jiayu-sy.github.io/tags/example-tag/index.xml" rel="self" type="application/rss+xml"/><item><title>FOC</title><link>https://jiayu-sy.github.io/p/foc1/</link><pubDate>Wed, 20 Aug 2025 18:09:48 +0800</pubDate><guid>https://jiayu-sy.github.io/p/foc1/</guid><description>&lt;hr&gt;
+&lt;p&gt;&lt;em&gt;2025年8/24&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;自从开始学习FOC已经过去将近一个半月了，走了不少弯路，拖得实在有点长。这两天逐步过渡到仿真部分，感觉理论部分已经差不多，可以收尾了。在此记录我学到现在对一些概念的解读和思考。网络上有很多讲解FOC的优秀文章，已经存在的内容这里就不再加以赘述。这里主要对一些算法的组成提出质疑和解答。&lt;/p&gt;
+&lt;div style="height: 24px;"&gt;&lt;/div&gt;
+&lt;h3 id="1-空间矢量的幅值考虑"&gt;1. 空间矢量的幅值考虑
+&lt;/h3&gt;&lt;p&gt;注：&lt;strong&gt;幅值=长度&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;不同的文章，书籍，视频教程中，常常对我们我们的控制对象——空间矢量，进行各种诡异的乘系数的操作。规范是什么？&lt;/p&gt;
+&lt;p&gt;首先，从调制波的等效波的角度来看，不同幅值的比较波与定时器的三角波比较出来的PWM显然是不同的。那我们的需求什么呢？若有一直流母线电压 $V_{dc}$，在SPWM里，我们需要比较波的幅值(按ARR拉伸为CCR值之前)不超过$V_{dc}/2$；但在SVPWM这里呢？&lt;/p&gt;
+&lt;p&gt;这里涉及一个，SVPWM的&lt;strong&gt;线性调制区&lt;/strong&gt;的问题，也就是，SVPWM最大能不失真的调制出多大的等效电压矢量？极限在哪？先说答案：六个非零基本矢量的顶点组成的六边形以内（自行证明），这导致我们能够合成的最大圆，是该六边形的&lt;strong&gt;内切圆&lt;/strong&gt;，圆半径为Vdc/sqrt{3}。可以定义一个调制比，定义为&lt;strong&gt;参考&lt;/strong&gt;电压矢量的幅值与母线电压可提供的最大电压幅值的比值。当 $V_{ref}$ 在 $\alpha\beta$ 坐标下，调制比写为 $M=\frac{|V_{ref}|}{V_{dc}/sqrt{3}}$。当该值超过1，代表将出现过调制，需要限幅。&lt;/p&gt;
+&lt;p&gt;好了，现在回到算法设计的初期，我们还两手空空，只有三相绕组。目标是以某种方法计算出需要施加的电压，使得合成的磁场方向垂直于转子的永磁磁场方向，顶着转子旋转。我们将三相绕组的电流电压物理量（标量）记为一些字母。这时这些物理量还是很纯真的，并没有进入到抽象的数学世界，这些淳朴的标量的大小直接对应物理量的大小。&lt;/p&gt;
+&lt;p&gt;接着引入了空间矢量的概念。从这开始，步步要小心，不能混淆控制对象的任何信息。要注意，电流/电压空间矢量，只是数学上的分析工具，电流电压本身并没有矢量的概念，只不过他们所影响的物理量，力矩和磁通，是真实的空间中的矢量，所以在数学中用矢量的方式表示三相电流/电压的&lt;strong&gt;合成效果&lt;/strong&gt;，是很方便的。这时，我们可以用复平面表示三相电流/电压矢量，及其合成的空间矢量的，用代数加减表示矢量合成。由于KCL带来的约束，这个所谓的 “三相系统”，只不过在用三个量，描述一个二自由度的系统。而用一复指数表示合成矢量，已经是一个自然的三二变换的过程了。克拉克变换不过对此步骤提供一种标准的数学方法而已。&lt;/p&gt;
+&lt;p&gt;（一个逻辑链条：三相电流本身可以看作三个基向量（120° 分布）上的投影 &amp;gt; 合成相当于向量叠加，结果就是一个唯一的空间矢量 &amp;gt; 这个空间矢量恰好体现了三相系统的实际自由度（二维）。）&lt;/p&gt;
+&lt;p&gt;需要明确，等幅值形式克拉克变换显然不是等价变换。（等价变换指的是一不改变向量的几何长度的坐标变换，如旋转矩阵）。那等的是什么？先说结论：$\alpha\beta$ 坐标下空间矢量的幅值，正好是单相电流/电压物理量的幅值。&lt;/p&gt;
+&lt;p&gt;有什么用？不妨一开始就不乘这个天杀的 $\frac{2}{3}$ 看看会对控制过程产生什么影响。首先，若设三相为平衡的正弦电流，$i_{a}=I_{m}\sin{\theta}, i_{b}=I_{m}\sin{(\theta+\frac{2}{3}\pi)}, i_{c}=I_{m}\sin{(\theta-\frac{2}{3}\pi)}$，不乘等幅值系数的克拉克变换为：（出于某种原因根号不渲染，略往右移的3就是根号三）&lt;/p&gt;
+$$
+\begin{bmatrix} i_{\alpha} \\
+i_{\beta} \end{bmatrix} =
+\begin{bmatrix} 1 &amp; -\frac{1}{2} &amp; -\frac{1}{2} \\
+0 &amp; \frac{\sqrt{3}}{2} &amp; -\frac{\sqrt{3}}{2} \end{bmatrix}
+\begin{bmatrix} i_{a} \\ i_{b} \\ i_{c} \end{bmatrix}
+$$&lt;p&gt;经过克拉克变换后，空间矢量在 $\alpha\beta$ 轴的分量为 $i_{\alpha}=(\sin{\theta}+\frac{1}{4}\sin{\theta}-\frac{\sqrt{3}}{4}\cos{\theta}+\frac{1}{4}\sin{\theta}+\frac{\sqrt{3}}{4}\cos{\theta})=\frac{3}{2}I_m\sin{\theta}$, $i_{\beta}=\frac{3}{2}I_m\cos{\theta}$。于是，该坐标下合成的空间矢量为 $i_s=i_{\alpha}+ji_{\beta}=\frac{3}{2}I_me^{j\theta}$，&lt;strong&gt;长度为 $\frac{3}{2}I_m$&lt;/strong&gt;，当 $\theta=\omega t$,矢量的轨迹就是以角速度 $\omega$ 旋转的圆。这意味着，矢量的幅值变成单相电流实际大小的1.5倍。&lt;/p&gt;
+&lt;p&gt;所以为了使在 $\alpha\beta$ 坐标系中的&lt;strong&gt;控制量与实际的物理量长度相等&lt;/strong&gt;，在电机控制领域一般用克拉克变换的等幅值形式，乘上 $\frac{2}{3}$ 使得长度匹配。接下来的帕克变换不过是乘上一旋转矩阵，为等价变换，并不对幅值有影响。&lt;/p&gt;
+&lt;p&gt;这里又产生一疑惑，我们在做的是：变换-操作-逆变换的过程，那不就是说不管有没有等幅值系数,最后都能回到原始三相电流吗？乘不乘系数似乎没有任何影响？这里的关键点在于，我们的控制算法大多数时候直接在 $dq$, $\alpha\beta$ 坐标下工作，矢量的幅值、相角被直接拿来和物理量对比、或用于限幅和PI控制！所以如果不加等幅值系数，操作时要手动修正，否则结果会多1.5倍。例如，SVPWM中的六个非零基本矢量，幅值极限将会变为 $V_{dc}$ 而非线性区实际的物理上限 $\frac{2}{3}V_{dc}$；如果直接用 $V_{dc}$ 进行限幅，就可能出现过调制。&lt;/p&gt;
+&lt;p&gt;可以看出，无论是Clark, Park 还是60度坐标系变换，都只是把同一个物理矢量在不同基底下表示，在新的坐标系里，矢量的坐标表示和度量方式会随基底而改变，同时运算必须按照该基底定义的线代关系来进行；结果逆变回去，就等价于在原坐标系操作。对于不同的任务，有的坐标系算起来更顺手。dq坐标下，控制更像直流电机；gh坐标系下，计算作用时间更方便；$\alpha\beta$ 坐标系下，幅值与物理量对应，计算调制比、矢量限幅更容易。当然操作的基础是，这些变换都是线性的，且可逆。&lt;/p&gt;
+&lt;div style="height: 36px;"&gt;&lt;/div&gt;
+&lt;h3 id="2-svpwm的计算方法"&gt;2. SVPWM的计算方法
+&lt;/h3&gt;&lt;p&gt;看了不少文章和视频，对于判断扇区 + 计算作用时间这两个任务，大致有 $\alpha\beta$ 轴下正弦分解、提前写出基本矢量在 $\alpha\beta$ 轴上的分量、60度坐标系这三种方法。前两种本质上并没有区别，要说有，就是运行时算不算三角函数的区别。个人认为，60度坐标系的计算方法是数学上最简洁的，扇区边界正好对齐坐标轴，且判断扇区时只需判断正负号，不需要计算三角函数。&lt;/p&gt;
+&lt;p&gt;有关60度坐标系：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;由于gh坐标系不是正交坐标系，计算幅值较为麻烦，所以我们需要用到空间矢量幅值的操作，即调制比计算和限幅，依然在 $\alpha\beta$ 坐标系里进行。在gh里做的只有判断扇区和计算作用时间。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;为什么在gh坐标里也能算作用时间？因为只要是线性变换，都能保证任意一个向量在变换前后和基矢的线性关系不变（得到该向量的线性组合系数不变）；而要计算的 $T_1, T_2$，正是这个线性组合的 ‘scaling factors&amp;rsquo;, 因此在 $\alpha\beta$ 和 60度系统里的解是完全一致的。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;判断扇区后，下一步是求出点压空间矢量在当前所在扇区的两个相邻矢量方向上的分量。变换到60度坐标系后，获得的gh分量显然是&lt;strong&gt;默认在第一扇区&lt;/strong&gt;的；当空间矢量处于其他扇区时，可以利用矢量在第一扇区两个基本方向上的分量，和在其他扇区基本方向上的分量之间的几何关系，求出后者。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;好了。到现在我的信心是很足了，不再到处怀疑。数学乃一切的基石！&lt;/p&gt;
+&lt;div style="height: 12px;"&gt;&lt;/div&gt;
+&lt;p style="text-align: center;"&gt;
+&lt;img src="https://jiayu-sy.github.io/image/image1.png" alt="cat" width="200"&gt;
+&lt;/p&gt;
+&lt;div style="height: 12px;"&gt;&lt;/div&gt;
+&lt;h3 id="3-pid控制器相关"&gt;3. PID控制器相关
+&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;1）$\bold{i_d}$, $\bold{i_q}$ 限幅&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;我们知道，空间矢量能达到的最大圆受直流母线电压 $V_{dc}$ 限制，写为 $V_d^2 + V_q^2 \le V_{max}^2$, 其中 $V_{max}=V_{dc}/\sqrt{3}$。所以，$i_d$, $i_q$ 电流环的PI控制器的电压输出 $V_d, V_q$, 比如落在这个圆内。&lt;/p&gt;
+&lt;p&gt;一般的做法是，先给 $V_d, V_q$ 中的一个施加上限 $\pm V_{max}$, 再根据这一个的实际输出值计算剩余空间给另一个限幅。若先限制id，剩余空间给iq的话有 $V_q^2 \le V_{max}^2 - V_d^2$。至于先算哪一个，取决于我们对磁通、转矩的控制优先级。&lt;/p&gt;
+&lt;div style="height: 36px;"&gt;&lt;/div&gt;
+&lt;h3 id="4-电力电子相关"&gt;4. 电力电子相关
+&lt;/h3&gt;&lt;p&gt;写了这么多空间向量数学上的各种操作，仿佛我们想让三相绕组电压是多少，就能是多少了。实操上却没那么简单。如果我们想要达成控制器、功率电子器件、电机这三者的分离，那么一定会用到开关型逆变器。具体的，我们采用PWM控制，对于给定的参考输入信号，通过调制策略生成的PWM信号，驱动开关管的导通与关断，使得abc三相的输出电压与参考输入相同。显然，先前讨论的电压/电流矢量，在SVPWM的场景下，正是这 “给定的参考输入信号”&lt;/p&gt;
+&lt;div style="height: 36px;"&gt;&lt;/div&gt;
+&lt;h3 id="5-一些杂七杂八的注意事项"&gt;5. 一些杂七杂八的注意事项
+&lt;/h3&gt;&lt;p&gt;下面对一些项目代码开发过程中遇到的小坑进行总结。代码全部参考b站up主 @KevinHuihui 有关FOC的系列视频。源码有着我认为非常好的模块化， hierarchy，移植性和值得学习的embedded practices。由于目前暂时停更一些内容只能靠自己理解，不一定是编写时的真实意图。有空再修订。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;已经明确，调制出SVPWM的策略是，用矢量合成的方法计算出每一调制周期六个开关管（上下管互补）的开关状态以及归一化的作用时间后（作用时间和 $T_s$的比值）乘上系数拉升至ARR(自动重装寄存器)值的两倍后，和定时器的三角波比较生成PWM波。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;这一步骤work依赖于：&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;我们计算出的反转点 $T_A, T_B, T_C$ 为归一化的&lt;strong&gt;时间比例&lt;/strong&gt;， 是相对于整个 $T_S$ 的比例。比如假设 ARR=7200, $T_A (=0.25*T_0) = 10%$, 就表示在整个周期占10%, 此时如果只对时间乘上7200，填入定时器比较寄存器CCR，由于CCR里填的是 “CNT计数到多少就翻转”, 0.1 * 7200 = 720, 结果就是会在三角波计数的自增阶段（前半周期）PWM电平就在10%的地方翻转，计数的自减简短再次在90%的地方翻转，导致该开关管的该状态的作用时间一共占20%。因此，不能只看三角波计数的最大值，而是要看一个周期内的总计数值，自增自减都包含在内。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;总结为：比较值 = 归一化时间比例 * 一个周期的总计数值&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;for some mental image, 我们做的是，设一个调制周期，在每个周期中，执行一次算法（SVPWM 本质上是对 V_DC 逆变的过程），更新三个时间比例，从而更新一次PWM信号。该周期与三角波的计数周期相等。如下图所示
+（至于采样周期还不明确）。Trigger?&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div style="height: 12px;"&gt;&lt;/div&gt;
+&lt;p style="text-align: center;"&gt;
+&lt;img src="https://jiayu-sy.github.io/image/svpwm.jpg" alt="cat" width="600"&gt;
+&lt;/p&gt;
+&lt;div style="height: 12px;"&gt;&lt;/div&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;上方的蓝线为CCR值。在这种scale下变化是很缓慢的。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;同时可以注意到，上图的比较逻辑为 CCR 大于 CNT 时，输出高电平。在stm32上为PWM模式1。（PWM模式2比较逻辑相反）&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;</description></item></channel></rss>
